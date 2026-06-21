@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>气泡池 Demo - 替你选</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+      background: #06061a;
+    }
+
+    /* ===== 背景层（深处） ===== */
+    .bg-deep {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(180deg, #06061a 0%, #0e0a2e 40%, #120835 70%, #0a0625 100%);
+    }
+
+    /* 背景中模糊的"远处气泡" */
+    .bg-distant-bubble {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(12px);
+      animation: driftSlow 8s ease-in-out infinite;
+    }
+
+    @keyframes driftSlow {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(20px, -15px) scale(0.95); }
+      50% { transform: translate(-10px, 20px) scale(1.05); }
+      75% { transform: translate(-25px, -10px) scale(0.9); }
+    }
+
+    /* 背景雾状光晕 */
+    .bg-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.25;
+      animation: glowPulse 6s ease-in-out infinite;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(1.3); }
+    }
+
+    /* ===== 星光层（中景） ===== */
+    .stars-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: #fff;
+      animation: twinkle var(--dur) ease-in-out infinite;
+      animation-delay: var(--delay);
+      opacity: var(--op);
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: var(--op); transform: scale(1); }
+      50% { opacity: 0.05; transform: scale(0.5); }
+    }
+
+    /* ===== 标题（前景最上层） ===== */
+    .header {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 50px 20px 10px;
+      pointer-events: none;
+    }
+
+    .title {
+      font-size: 34px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 6px;
+      text-shadow: 0 0 40px rgba(255,107,53,0.3), 0 0 80px rgba(255,107,53,0.15);
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: rgba(255,255,255,0.35);
+      margin-top: 8px;
+      letter-spacing: 3px;
+    }
+
+    /* ===== 气泡层（前景 - 关键！） ===== */
+    .bubble-stage {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      pointer-events: none;
+      /* 这层在背景/星星之上，但标题之下 */
+    }
+
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: auto;
+      cursor: pointer;
+      /* 核心：大范围外发光 + 投影制造漂浮感 */
+      filter: drop-shadow(0 8px 30px rgba(0, 0, 0, 0.4));
+      animation: breathe var(--breathe) ease-in-out infinite;
+      transition: filter 0.3s ease;
+    }
+
+    /* 气泡本体（用 ::after 来实现 3D 球体质感，这样 filter 只作用在阴影上） */
+    .bubble-inner {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow:
+        inset 0 -5px 15px rgba(0,0,0,0.15),
+        0 0 25px 5px var(--glow-color),
+        0 0 60px 3px var(--glow-outer);
+      position: relative;
+    }
+
+    .bubble-inner::before {
+      content: '';
+      position: absolute;
+      inset: 12% 18% 60% 18%;
+      border-radius: 50%;
+      background: radial-gradient(
+        ellipse at 50% 50%,
+        rgba(255,255,255,0.5) 0%,
+        transparent 100%
+      );
+      transform: rotate(-25deg);
+    }
+
+    .bubble-inner::after {
+      content: '';
+      position: absolute;
+      inset: 55% 55% 15% 15%;
+      border-radius: 50%;
+      background: radial-gradient(
+        ellipse at 50% 50%,
+        rgba(255,255,255,0.12) 0%,
+        transparent 100%
+      );
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* 选中状态 */
+    .bubble.selected {
+      animation: none !important;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.35s ease !important;
+      transform: scale(1.6) !important;
+      z-index: 100 !important;
+      filter: drop-shadow(0 0 50px var(--glow-color)) !important;
+    }
+
+    .bubble.selected .bubble-inner {
+      box-shadow:
+        inset 0 -5px 15px rgba(0,0,0,0.1),
+        0 0 50px 15px var(--glow-color),
+        0 0 100px 10px var(--glow-outer);
+    }
+
+    /* 非选中气泡淡出 */
+    .bubble.fading {
+      animation: none !important;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      opacity: 0;
+      transform: scale(0.2);
+      pointer-events: none;
+    }
+
+    /* 爆开碎片 */
+    .shard {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 200;
+      filter: blur(0.5px);
+      animation: shatter 0.9s ease-out forwards;
+    }
+
+    @keyframes shatter {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--sx), var(--sy)) scale(0);
+      }
+    }
+
+    /* ===== 底部按钮 ===== */
+    .footer {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+    }
+
+    .btn-settings {
+      padding: 12px 30px;
+      border-radius: 25px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.75);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .btn-settings:hover,
+    .btn-settings:active {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.25);
+      color: #fff;
+    }
+
+    /* ===== 结果卡片 ===== */
+    .result-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .result-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .result-card {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 30px 24px 24px;
+      width: min(90vw, 340px);
+      text-align: center;
+      box-shadow:
+        0 20px 60px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(255,255,255,0.1);
+      animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .result-emoji { font-size: 44px; margin-bottom: 6px; }
+    .result-name { font-size: 22px; font-weight: 700; margin-bottom: 6px; color: #222; }
+    .result-cat {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, #FF6B35, #FFC107);
+      margin-bottom: 14px;
+    }
+    .result-info {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+    }
+    .result-tags {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    .result-tag {
+      padding: 3px 10px;
+      border-radius: 14px;
+      font-size: 11px;
+      background: #f5f0eb;
+      color: #666;
+    }
+    .result-actions {
+      display: flex;
+      gap: 12px;
+    }
+    .result-actions button {
+      flex: 1;
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: none;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-retry {
+      background: #f0f0f0;
+      color: #555;
+    }
+    .btn-confirm {
+      background: linear-gradient(135deg, #FF6B35, #E53935);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 背景层：深处 -->
+  <div class="bg-deep" id="bgDeep"></div>
+
+  <!-- 星光中景层 -->
+  <div class="stars-layer" id="starsLayer"></div>
+
+  <!-- 标题 -->
+  <div class="header">
+    <div class="title">替你选</div>
+    <div class="subtitle">让气泡帮你决定</div>
+  </div>
+
+  <!-- 气泡前景层 -->
+  <div class="bubble-stage" id="bubbleStage"></div>
+
+  <!-- 底部按钮 -->
+  <div class="footer">
+    <button class="btn-settings" id="btnSettings">⚙️ 设置忌口</button>
+  </div>
+
+  <!-- 结果卡片 -->
+  <div class="result-overlay" id="resultOverlay">
+    <div class="result-card" id="resultCard"></div>
+  </div>
+
+  <script>
+    (() => {
+      const COLORS = [
+        { fill: 'rgba(255, 107, 53, 0.28)',  glow: 'rgba(255, 107, 53, 0.45)',  outer: 'rgba(255, 107, 53, 0.18)' },
+        { fill: 'rgba(255, 193, 7, 0.28)',   glow: 'rgba(255, 193, 7, 0.45)',   outer: 'rgba(255, 193, 7, 0.18)' },
+        { fill: 'rgba(255, 107, 107, 0.28)', glow: 'rgba(255, 107, 107, 0.45)', outer: 'rgba(255, 107, 107, 0.18)' },
+        { fill: 'rgba(156, 39, 176, 0.28)',  glow: 'rgba(156, 39, 176, 0.45)',  outer: 'rgba(156, 39, 176, 0.18)' },
+        { fill: 'rgba(33, 150, 243, 0.28)',  glow: 'rgba(33, 150, 243, 0.45)',  outer: 'rgba(33, 150, 243, 0.18)' },
+        { fill: 'rgba(0, 188, 212, 0.28)',   glow: 'rgba(0, 188, 212, 0.45)',   outer: 'rgba(0, 188, 212, 0.18)' },
+        { fill: 'rgba(76, 175, 80, 0.28)',   glow: 'rgba(76, 175, 80, 0.45)',   outer: 'rgba(76, 175, 80, 0.18)' },
+        { fill: 'rgba(229, 57, 53, 0.28)',   glow: 'rgba(229, 57, 53, 0.45)',   outer: 'rgba(229, 57, 53, 0.18)' },
+      ];
+
+      const stage = document.getElementById('bubbleStage');
+      const resultOverlay = document.getElementById('resultOverlay');
+      const resultCardEl = document.getElementById('resultCard');
+
+      let bubbles = [];
+      let animFrame = null;
+      let W = window.innerWidth;
+      let H = window.innerHeight;
+      let isExploding = false;
+
+      // ===== 背景层：模糊远景气泡 + 光晕 =====
+      function createDeepBg() {
+        const container = document.getElementById('bgDeep');
+
+        // 大光晕
+        for (let i = 0; i < 4; i++) {
+          const g = document.createElement('div');
+          g.className = 'bg-glow';
+          const colors = ['rgba(255,107,53,0.3)', 'rgba(156,39,176,0.3)', 'rgba(33,150,243,0.3)', 'rgba(0,188,212,0.3)'];
+          g.style.background = `radial-gradient(circle, ${colors[i]}, transparent 70%)`;
+          g.style.width = (200 + Math.random() * 200) + 'px';
+          g.style.height = g.style.width;
+          g.style.left = (10 + Math.random() * 70) + '%';
+          g.style.top = (10 + Math.random() * 70) + '%';
+          g.style.animationDelay = (i * 1.5) + 's';
+          g.style.animationDuration = (5 + Math.random() * 4) + 's';
+          container.appendChild(g);
+        }
+
+        // 远处模糊气泡（景深）
+        const distantColors = [
+          'rgba(255,107,53,0.12)', 'rgba(156,39,176,0.12)',
+          'rgba(33,150,243,0.10)', 'rgba(255,193,7,0.08)',
+          'rgba(229,57,53,0.10)', 'rgba(0,188,212,0.10)'
+        ];
+        for (let i = 0; i < 8; i++) {
+          const b = document.createElement('div');
+          b.className = 'bg-distant-bubble';
+          const size = 80 + Math.random() * 160;
+          b.style.width = size + 'px';
+          b.style.height = size + 'px';
+          b.style.background = `radial-gradient(circle at 40% 35%, rgba(255,255,255,0.1), ${distantColors[i % distantColors.length]})`;
+          b.style.border = '1px solid rgba(255,255,255,0.04)';
+          b.style.left = (Math.random() * 85) + '%';
+          b.style.top = (Math.random() * 85) + '%';
+          b.style.animationDelay = (i * 0.8) + 's';
+          b.style.animationDuration = (6 + Math.random() * 6) + 's';
+          container.appendChild(b);
+        }
+      }
+
+      // ===== 星光 =====
+      function createStars() {
+        const container = document.getElementById('starsLayer');
+        const count = 80;
+        for (let i = 0; i < count; i++) {
+          const s = document.createElement('div');
+          s.className = 'star';
+          const size = 1 + Math.random() * 2;
+          s.style.width = size + 'px';
+          s.style.height = size + 'px';
+          s.style.left = Math.random() * 100 + '%';
+          s.style.top = Math.random() * 100 + '%';
+          s.style.setProperty('--dur', (2 + Math.random() * 5) + 's');
+          s.style.setProperty('--delay', Math.random() * 6 + 's');
+          s.style.setProperty('--op', (0.2 + Math.random() * 0.5));
+          container.appendChild(s);
+        }
+      }
+
+      // ===== 气泡创建 =====
+      function createBubble(id) {
+        const size = 44 + Math.random() * 56;
+        const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+
+        const el = document.createElement('div');
+        el.className = 'bubble';
+        el.style.width = size + 'px';
+        el.style.height = size + 'px';
+        el.style.left = Math.random() * (W - size) + 'px';
+        el.style.top = Math.random() * (H - size) + 'px';
+        el.style.setProperty('--breathe', (2.5 + Math.random() * 3) + 's');
+        el.style.setProperty('--glow-color', color.glow);
+        el.style.setProperty('--glow-outer', color.outer);
+        el.style.zIndex = Math.floor(size);
+
+        // 内层 3D 球体
+        const inner = document.createElement('div');
+        inner.className = 'bubble-inner';
+        inner.style.background = `radial-gradient(circle at 40% 30%, rgba(255,255,255,0.18) 0%, ${color.fill} 55%, transparent 100%)`;
+        inner.style.boxShadow = `inset 0 -4px 12px rgba(0,0,0,0.2), 0 0 25px 4px ${color.glow}, 0 0 60px 2px ${color.outer}`;
+        el.appendChild(inner);
+
+        const data = {
+          el, id, size,
+          x: parseFloat(el.style.left),
+          y: parseFloat(el.style.top),
+          vx: (Math.random() - 0.5) * 1.0,
+          vy: (Math.random() - 0.5) * 1.0,
+          color, alive: true
+        };
+
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (isExploding) return;
+          onBubbleClick(data);
+        });
+        el.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          if (isExploding) return;
+          onBubbleClick(data);
+        }, { passive: false });
+
+        stage.appendChild(el);
+        return data;
+      }
+
+      function createBubbles(count) {
+        destroyAllBubbles();
+        bubbles = [];
+        for (let i = 0; i < count; i++) bubbles.push(createBubble(i));
+        startAnimating();
+      }
+
+      function destroyAllBubbles() {
+        cancelAnimationFrame(animFrame);
+        stage.innerHTML = '';
+        bubbles = [];
+      }
+
+      // ===== 动画循环 =====
+      function startAnimating() {
+        function tick() {
+          if (isExploding) { animFrame = requestAnimationFrame(tick); return; }
+          W = window.innerWidth; H = window.innerHeight;
+          for (const b of bubbles) {
+            if (!b.alive) continue;
+            b.x += b.vx;
+            b.y += b.vy;
+            if (b.x <= -10) { b.x = -10; b.vx *= -1; }
+            if (b.x + b.size >= W + 10) { b.x = W + 10 - b.size; b.vx *= -1; }
+            if (b.y <= -10) { b.y = -10; b.vy *= -1; }
+            if (b.y + b.size >= H + 10) { b.y = H + 10 - b.size; b.vy *= -1; }
+            b.el.style.left = b.x + 'px';
+            b.el.style.top = b.y + 'px';
+          }
+          animFrame = requestAnimationFrame(tick);
+        }
+        tick();
+      }
+
+      // ===== 点击气泡 =====
+      function onBubbleClick(data) {
+        isExploding = true;
+        data.el.classList.add('selected');
+        const cx = W / 2 - data.size / 2;
+        const cy = H / 2 - data.size / 2;
+        data.el.style.left = cx + 'px';
+        data.el.style.top = cy + 'px';
+
+        bubbles.forEach(b => {
+          if (b !== data) b.el.classList.add('fading');
+        });
+
+        setTimeout(() => {
+          explode(data);
+          data.el.style.opacity = '0';
+          data.el.style.transform = 'scale(2.5)';
+          data.el.style.transition = 'all 0.35s ease';
+          setTimeout(() => showResultCard(data), 400);
+        }, 350);
+      }
+
+      // ===== 爆开粒子 =====
+      function explode(data) {
+        const cx = W / 2, cy = H / 2;
+        for (let i = 0; i < 25; i++) {
+          const shard = document.createElement('div');
+          shard.className = 'shard';
+          const size = 3 + Math.random() * 12;
+          shard.style.width = size + 'px';
+          shard.style.height = size + 'px';
+          shard.style.background = `radial-gradient(circle, rgba(255,255,255,0.7), ${data.color.fill.replace('0.28', '0.6')})`;
+          shard.style.boxShadow = `0 0 10px 3px ${data.color.glow}`;
+          shard.style.left = cx + 'px';
+          shard.style.top = cy + 'px';
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 50 + Math.random() * 180;
+          shard.style.setProperty('--sx', Math.cos(angle) * dist + 'px');
+          shard.style.setProperty('--sy', Math.sin(angle) * dist + 'px');
+          document.body.appendChild(shard);
+          setTimeout(() => shard.remove(), 900);
+        }
+      }
+
+      // ===== 结果卡片 =====
+      function showResultCard(data) {
+        const catNames = ['面食', '汉堡', '烧烤', '川菜', '粤菜', '日料', '韩餐', '甜品'];
+        const cat = catNames[Math.floor(Math.random() * catNames.length)];
+        const shopNames = ['张记热干面','蜀味香川菜馆','樱花寿司屋','明洞烤肉','许留山甜品','首尔炸鸡','潮汕牛肉火锅','火焰山烧烤'];
+        const shop = shopNames[Math.floor(Math.random() * shopNames.length)];
+        const price = 15 + Math.floor(Math.random() * 65);
+        const rating = (3.5 + Math.random() * 1.5).toFixed(1);
+        const dist = (0.5 + Math.random() * 4.5).toFixed(1);
+
+        resultCardEl.innerHTML = `
+          <div class="result-emoji">🎉</div>
+          <div class="result-cat">${cat}</div>
+          <div class="result-name">${shop}</div>
+          <div class="result-info">
+            <span>💰 人均 ¥${price}</span>
+            <span>⭐ ${rating}分</span>
+            <span>📍 ${dist}km</span>
+          </div>
+          <div class="result-tags">
+            <span class="result-tag">老字号</span>
+            <span class="result-tag">网红</span>
+            <span class="result-tag">不辣</span>
+          </div>
+          <div class="result-actions">
+            <button class="btn-retry" id="btnRetry">🔄 再来一次</button>
+            <button class="btn-confirm" id="btnConfirm">🛒 就选这个</button>
+          </div>
+        `;
+        resultOverlay.classList.add('open');
+        document.getElementById('btnRetry').addEventListener('click', resetBubbles);
+        document.getElementById('btnConfirm').addEventListener('click', () => {
+          alert('跳转美团外卖搜索页');
+          resetBubbles();
+        });
+      }
+
+      // ===== 重置气泡 =====
+      function resetBubbles() {
+        resultOverlay.classList.remove('open');
+        isExploding = false;
+        stage.innerHTML = '';
+        bubbles.forEach(b => b.alive = false);
+        bubbles = [];
+        for (let i = 0; i < 18; i++) {
+          const b = createBubble(i);
+          b.el.style.left = (W/2 - b.size/2) + 'px';
+          b.el.style.top = (H/2 - b.size/2) + 'px';
+          b.el.style.opacity = '0';
+          b.el.style.transform = 'scale(0)';
+          b.alive = false;
+          bubbles.push(b);
+          setTimeout(() => {
+            b.el.style.transition = 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            b.el.style.left = (Math.random() * (W - b.size)) + 'px';
+            b.el.style.top = (Math.random() * (H - b.size)) + 'px';
+            b.el.style.opacity = '1';
+            b.el.style.transform = 'scale(1)';
+            b.x = parseFloat(b.el.style.left);
+            b.y = parseFloat(b.el.style.top);
+            setTimeout(() => { b.alive = true; b.el.style.transition = ''; }, 500);
+          }, i * 50);
+        }
+        startAnimating();
+      }
+
+      window.addEventListener('resize', () => { W = window.innerWidth; H = window.innerHeight; });
+      document.getElementById('btnSettings').addEventListener('click', () => alert('设置忌口（待接入）'));
+
+      // ===== 启动 =====
+      createDeepBg();
+      createStars();
+      createBubbles(18);
+    })();
+  </script>
+</body>
+</html>
