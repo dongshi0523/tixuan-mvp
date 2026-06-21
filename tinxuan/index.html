@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>替你选 - 替你选</title>
+  <link rel="icon" href="assets/favicon.png" type="image/x-icon">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- 顶部标题栏 -->
+    <header class="header">
+      <div class="logo">🥢</div>
+      <h1 class="title">替你选</h1>
+      <button id="btnHelp" class="btn-help-header">📖 使用说明</button>
+    </header>
+
+    <!-- 转盘区域 -->
+    <main class="wheel-section">
+      <div class="wheel-wrapper">
+        <div class="wheel-pointer">▼</div>
+        <canvas id="wheelCanvas" width="600" height="600"></canvas>
+        <div class="wheel-center">GO</div>
+      </div>
+    </main>
+
+    <!-- 按钮区域 -->
+    <div class="actions">
+      <button id="btnPreferences" class="btn btn-outline">设置忌口</button>
+      <button id="btnSpin" class="btn btn-primary">开始抽奖</button>
+    </div>
+
+    <!-- 忌口设置面板（底部滑出） -->
+    <div id="preferencesPanel" class="preferences-panel">
+      <div class="panel-handle"></div>
+      <div class="panel-overlay" id="panelOverlay"></div>
+      <div class="panel-content">
+        <h3 class="panel-title">设置忌口</h3>
+        <div class="checkbox-group" id="checkboxGroup">
+          <label class="checkbox-item">
+            <input type="checkbox" value="辣">
+            <span class="checkbox-mark"></span>
+            <span class="checkbox-label">不吃辣</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" value="香菜">
+            <span class="checkbox-mark"></span>
+            <span class="checkbox-label">不吃香菜</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" value="海鲜">
+            <span class="checkbox-mark"></span>
+            <span class="checkbox-label">不吃海鲜</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" value="内脏">
+            <span class="checkbox-mark"></span>
+            <span class="checkbox-label">不吃内脏</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" value="牛肉">
+            <span class="checkbox-mark"></span>
+            <span class="checkbox-label">不吃牛肉</span>
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" value="甜">
+            <span class="checkbox-mark"></span>
+            <span class="checkbox-label">不吃甜</span>
+          </label>
+        </div>
+        <button id="btnSavePreferences" class="btn btn-primary btn-full">保存设置</button>
+      </div>
+    </div>
+
+    <!-- 使用说明弹窗 -->
+    <div id="helpModal" class="modal-overlay">
+      <div class="help-card">
+        <div class="help-emoji">🥢</div>
+        <h2 class="help-title">使用说明</h2>
+        <div class="help-content">
+          <p><strong>替你选</strong>帮助你解决"今天吃什么"的选择困难症。</p>
+          <h4>📌 使用方法</h4>
+          <ol>
+            <li>点击<strong>设置忌口</strong>，勾选你不吃的食物类型</li>
+            <li>点击<strong>开始抽奖</strong>，大转盘随机选中一个品类</li>
+            <li>弹窗推荐一家店铺，点击<strong>换一个</strong>可切换同品类其他店铺</li>
+            <li>点击<strong>就选这个</strong>自动跳转到美团外卖搜索页</li>
+          </ol>
+          <h4>💡 温馨提示</h4>
+          <ul>
+            <li>弹窗中的选项为对应品类的<strong>美团外卖商家名称</strong></li>
+            <li>本站只能跳转到美团外卖 H5 搜索页，请在该页面自行搜索并下单</li>
+          </ul>
+        </div>
+        <button id="btnCloseHelp" class="btn btn-primary btn-full">知道了</button>
+      </div>
+    </div>
+
+    <!-- 推荐结果卡片（弹窗） -->
+    <div id="resultModal" class="modal-overlay">
+      <div class="result-card">
+        <div class="result-emoji">🎉</div>
+        <h2 class="result-shop-name" id="resultShopName"></h2>
+        <span class="result-category" id="resultCategory"></span>
+        <div class="result-info">
+          <div class="result-info-item">
+            <span class="info-icon">💰</span>
+            <span id="resultPrice"></span>
+          </div>
+          <div class="result-info-item">
+            <span class="info-icon">⭐</span>
+            <span id="resultRating"></span>
+          </div>
+          <div class="result-info-item">
+            <span class="info-icon">📍</span>
+            <span id="resultDistance"></span>
+          </div>
+        </div>
+        <div class="result-tags" id="resultTags"></div>
+        <p class="result-hint">点击"就选这个"后将自动跳转到美团外卖搜索页</p>
+        <div class="result-actions">
+          <button id="btnReroll" class="btn btn-outline">换一个</button>
+          <button id="btnConfirm" class="btn btn-primary">就选这个</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/wheel.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
