@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>个性化偏好 - 替你选</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#8c4a00',
+            'primary-container': '#fd8b00',
+            'secondary-container': '#fecb00',
+            tertiary: '#006b1b',
+            surface: '#fbf5f0',
+            'surface-container': '#ede7e2',
+            'surface-container-low': '#f6f0ea',
+            'surface-container-lowest': '#ffffff',
+            'on-surface': '#302e2b',
+            'on-surface-variant': '#5e5b57',
+          },
+          borderRadius: {
+            DEFAULT: '1rem',
+            lg: '2rem',
+            xl: '3rem',
+            full: '9999px',
+          },
+          fontFamily: {
+            headline: ['Plus Jakarta Sans', 'sans-serif'],
+            body: ['Be Vietnam Pro', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-surface font-body text-on-surface">
+
+  <div id="toast-container"></div>
+
+  <div class="page-content max-w-2xl mx-auto px-4 pt-6 safe-bottom pb-32">
+
+    <!-- 顶部导航 -->
+    <header class="flex items-center gap-3 mb-6">
+      <button onclick="history.back()" class="btn-press w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-low shadow-ambient">
+        <span class="material-symbols-outlined text-on-surface">arrow_back</span>
+      </button>
+      <h1 class="font-headline text-xl font-bold">个性化偏好</h1>
+    </header>
+
+    <!-- Header 视觉卡片 -->
+    <div class="relative rounded-2xl overflow-hidden h-36 mb-8 shadow-ambient-lg">
+      <img src="https://picsum.photos/seed/foodhero/800/400" alt="" class="w-full h-full object-cover">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-5">
+        <h2 class="font-headline text-xl font-bold text-white">打造专属美味</h2>
+      </div>
+    </div>
+
+    <!-- 避雷库管理 -->
+    <section class="mb-8">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-headline text-base font-bold">避雷库</h3>
+        <button id="btnAddTaboo" class="btn-press text-sm text-primary font-semibold flex items-center gap-1">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          添加
+        </button>
+      </div>
+      <p class="text-xs text-on-surface-variant mb-3">我们会为您过滤掉包含以下成分的菜品</p>
+      <div class="flex flex-wrap gap-2" id="tabooList">
+      </div>
+
+      <!-- 添加弹窗 -->
+      <div id="addTabooDialog" class="hidden fixed inset-0 z-50 flex items-end justify-center" style="background: rgba(0,0,0,0.3);">
+        <div class="bg-surface-container-lowest w-full max-w-2xl rounded-t-[2rem] p-6 pb-10 shadow-ambient-lg" style="padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));">
+          <div class="w-12 h-1.5 bg-surface-container rounded-full mx-auto mb-5"></div>
+          <h4 class="font-headline text-base font-bold mb-4">添加忌口</h4>
+          <input id="tabooInput" type="text" placeholder="输入要避开的食材或口味..." class="w-full bg-surface-container-low rounded-full px-5 py-3 text-sm outline-none mb-4">
+          <div class="flex gap-3">
+            <button id="btnCancelAdd" class="btn-press flex-1 py-3 rounded-full font-headline font-semibold bg-surface-container text-on-surface">取消</button>
+            <button id="btnConfirmAdd" class="btn-press flex-1 py-3 rounded-full font-headline font-semibold text-white cta-gradient">确认添加</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 用餐偏好 (滑块) -->
+    <section class="mb-8">
+      <h3 class="font-headline text-base font-bold mb-4">用餐偏好</h3>
+      
+      <div class="glass rounded-2xl p-5 mb-3 shadow-ambient">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-semibold">期望分量</span>
+          <span class="text-xs text-primary font-semibold" id="portionLabel">适中</span>
+        </div>
+        <input type="range" id="portionSlider" min="0" max="100" value="50" class="w-full">
+        <div class="flex justify-between text-xs text-on-surface-variant mt-1">
+          <span>小份 / 轻食</span>
+          <span>饱腹 / 大份</span>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl p-5 mb-3 shadow-ambient">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-semibold">配送速度</span>
+          <span class="text-xs text-primary font-semibold" id="speedLabel">适中</span>
+        </div>
+        <input type="range" id="speedSlider" min="0" max="100" value="50" class="w-full">
+        <div class="flex justify-between text-xs text-on-surface-variant mt-1">
+          <span>不急，慢点也行</span>
+          <span>越快越好</span>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl p-5 shadow-ambient">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-semibold">价格敏感度</span>
+          <span class="text-xs text-primary font-semibold" id="priceLabel">适中</span>
+        </div>
+        <input type="range" id="priceSlider" min="0" max="100" value="50" class="w-full">
+        <div class="flex justify-between text-xs text-on-surface-variant mt-1">
+          <span>极致性价比</span>
+          <span>高品质享受</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 饮食习惯 (开关) -->
+    <section class="mb-8">
+      <h3 class="font-headline text-base font-bold mb-4">饮食习惯</h3>
+      
+      <div class="glass rounded-2xl p-4 mb-3 shadow-ambient flex items-center justify-between">
+        <span class="text-sm font-semibold">素食主义者</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="vegetarianToggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="glass rounded-2xl p-4 mb-3 shadow-ambient flex items-center justify-between">
+        <span class="text-sm font-semibold">低碳饮食</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="lowCarbToggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="glass rounded-2xl p-4 shadow-ambient flex items-center justify-between">
+        <span class="text-sm font-semibold">控糖挑战</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="sugarToggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <!-- 保存按钮 -->
+    <button id="btnSave" class="btn-press cta-gradient w-full py-4 rounded-full font-headline text-lg font-bold text-white text-center shadow-ambient-lg mb-4">
+      保存设置
+    </button>
+
+  </div>
+
+  <script src="js/app.js"></script>
+  <script src="js/preferences.js"></script>
+</body>
+</html>

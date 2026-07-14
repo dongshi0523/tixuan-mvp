@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>发现 - 替你选</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#8c4a00',
+            'primary-container': '#fd8b00',
+            'secondary-container': '#fecb00',
+            tertiary: '#006b1b',
+            surface: '#fbf5f0',
+            'surface-container': '#ede7e2',
+            'surface-container-low': '#f6f0ea',
+            'surface-container-lowest': '#ffffff',
+            'on-surface': '#302e2b',
+            'on-surface-variant': '#5e5b57',
+          },
+          borderRadius: {
+            DEFAULT: '1rem',
+            lg: '2rem',
+            xl: '3rem',
+            full: '9999px',
+          },
+          fontFamily: {
+            headline: ['Plus Jakarta Sans', 'sans-serif'],
+            body: ['Be Vietnam Pro', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-surface font-body text-on-surface">
+
+  <div id="toast-container"></div>
+
+  <div class="page-content max-w-2xl mx-auto px-4 pt-6 safe-bottom pb-32">
+
+    <!-- 顶部 -->
+    <h1 class="font-headline text-xl font-bold mb-4">美食鉴赏</h1>
+
+    <!-- 搜索栏（展示用） -->
+    <div class="glass rounded-full px-5 py-3 flex items-center gap-3 mb-6 shadow-ambient">
+      <span class="material-symbols-outlined text-on-surface-variant">search</span>
+      <input type="text" placeholder="搜索美食情报..." class="bg-transparent flex-1 outline-none text-sm text-on-surface placeholder:text-on-surface-variant" readonly>
+    </div>
+
+    <!-- 分类 Tab -->
+    <div class="flex gap-2 mb-6" id="filterTabs">
+      <button class="btn-press px-5 py-2 rounded-full text-sm font-semibold bg-primary text-white transition-colors" data-filter="all">全部</button>
+      <button class="btn-press px-5 py-2 rounded-full text-sm font-semibold bg-surface-container text-on-surface-variant transition-colors" data-filter="seedling">种草</button>
+      <button class="btn-press px-5 py-2 rounded-full text-sm font-semibold bg-surface-container text-on-surface-variant transition-colors" data-filter="warning">踩雷</button>
+    </div>
+
+    <!-- 卡片列表 -->
+    <div class="flex flex-col gap-4" id="pgcList">
+    </div>
+
+  </div>
+
+  <!-- 底部 Tab 导航 -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40">
+    <div class="max-w-2xl mx-auto glass-strong px-6 py-3 flex items-center justify-around rounded-t-[2rem] shadow-ambient-lg" style="padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));">
+      <a href="index.html" class="flex flex-col items-center gap-1">
+        <span class="material-symbols-outlined text-on-surface-variant text-[28px]">home</span>
+        <span class="text-[11px] text-on-surface-variant">首页</span>
+      </a>
+      <a href="discover.html" class="flex flex-col items-center gap-1 relative">
+        <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-12 h-1 bg-primary rounded-full"></div>
+        <span class="material-symbols-filled text-primary text-[28px]">explore</span>
+        <span class="text-[11px] text-primary font-semibold">发现</span>
+      </a>
+      <a href="profile.html" class="flex flex-col items-center gap-1">
+        <span class="material-symbols-outlined text-on-surface-variant text-[28px]">person</span>
+        <span class="text-[11px] text-on-surface-variant">我的</span>
+      </a>
+    </div>
+  </nav>
+
+  <script src="js/app.js"></script>
+  <script src="js/discover.js"></script>
+  <script>
+    // 渲染 PGC 卡片
+    let currentFilter = 'all';
+
+    function renderCards(filter) {
+      currentFilter = filter;
+      const list = document.getElementById('pgcList');
+      const items = filter === 'all' ? PGC_CONTENT : PGC_CONTENT.filter(c => c.type === filter);
+      
+      list.innerHTML = items.map(item => {
+        const isSeedling = item.type === 'seedling';
+        const badgeClass = isSeedling ? 'bg-primary text-white' : 'bg-[#4a3728] text-white';
+        const badgeText = isSeedling ? '优质发现' : '避雷';
+        const btnClass = isSeedling ? 'bg-primary text-white' : 'bg-surface-container text-on-surface';
+        const btnText = isSeedling ? '去试试' : '查看详情';
+
+        return `
+          <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-ambient">
+            <div class="relative h-48 overflow-hidden">
+              <img src="${item.image}" alt="" class="w-full h-full object-cover" loading="lazy">
+              <span class="absolute top-3 left-3 ${badgeClass} text-xs px-3 py-1 rounded-full font-semibold">${badgeText}</span>
+            </div>
+            <div class="p-4">
+              <h3 class="font-headline text-base font-bold mb-2">${item.title}</h3>
+              <p class="text-sm text-on-surface-variant mb-3 leading-relaxed">${item.content}</p>
+              <div class="flex flex-wrap gap-1.5 mb-3">
+                ${item.tags.map(t => `<span class="px-2 py-0.5 rounded-full text-xs bg-surface-container-low text-on-surface-variant">${t}</span>`).join('')}
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <img src="https://picsum.photos/seed/${item.author}/40/40" class="w-6 h-6 rounded-full" alt="">
+                  <span class="text-xs text-on-surface-variant">${item.author}</span>
+                </div>
+                <button class="btn-press px-4 py-1.5 rounded-full text-xs font-semibold ${btnClass}" onclick="showToast('该功能正在开发中，敬请期待')">
+                  ${btnText}
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Tab 切换
+    document.querySelectorAll('#filterTabs button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('#filterTabs button').forEach(b => {
+          b.className = 'btn-press px-5 py-2 rounded-full text-sm font-semibold bg-surface-container text-on-surface-variant transition-colors';
+        });
+        this.className = 'btn-press px-5 py-2 rounded-full text-sm font-semibold bg-primary text-white transition-colors';
+        renderCards(this.getAttribute('data-filter'));
+      });
+    });
+
+    // 初始渲染
+    renderCards('all');
+  </script>
+</body>
+</html>

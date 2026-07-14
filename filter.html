@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>精准筛选 - 替你选</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#8c4a00',
+            'primary-container': '#fd8b00',
+            'secondary-container': '#fecb00',
+            tertiary: '#006b1b',
+            surface: '#fbf5f0',
+            'surface-container': '#ede7e2',
+            'surface-container-low': '#f6f0ea',
+            'surface-container-lowest': '#ffffff',
+            'on-surface': '#302e2b',
+            'on-surface-variant': '#5e5b57',
+          },
+          borderRadius: {
+            DEFAULT: '1rem',
+            lg: '2rem',
+            xl: '3rem',
+            full: '9999px',
+          },
+          fontFamily: {
+            headline: ['Plus Jakarta Sans', 'sans-serif'],
+            body: ['Be Vietnam Pro', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+
+    <style>
+      @keyframes slideUp {
+        0% { transform: translateY(60px) scale(0.9); opacity: 0; }
+        100% { transform: translateY(0) scale(1); opacity: 1; }
+      }
+      .animate-slideUp {
+        animation: slideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+    </style>
+
+</head>
+<body class="bg-surface font-body text-on-surface">
+
+  <div id="toast-container"></div>
+
+  <div class="page-content max-w-2xl mx-auto px-4 pt-6 safe-bottom pb-32">
+
+    <!-- 顶部导航 -->
+    <header class="flex items-center gap-3 mb-8">
+      <button onclick="history.back()" class="btn-press w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-low shadow-ambient">
+        <span class="material-symbols-outlined text-on-surface">arrow_back</span>
+      </button>
+      <h1 class="font-headline text-xl font-bold">精准筛选</h1>
+    </header>
+
+    <!-- 品类选择 -->
+    <section class="mb-8">
+      <h2 class="font-headline text-base font-bold mb-3">品类选择</h2>
+      <div class="flex flex-wrap gap-2" id="categoryChips">
+      </div>
+    </section>
+
+    <!-- 预算区间 -->
+    <section class="mb-8">
+      <h2 class="font-headline text-base font-bold mb-3">预算区间</h2>
+      <div class="flex gap-2" id="budgetOptions">
+      </div>
+    </section>
+
+    <!-- 配送距离 -->
+    <section class="mb-8">
+      <h2 class="font-headline text-base font-bold mb-3">配送距离</h2>
+      <div class="flex gap-2" id="distanceOptions">
+      </div>
+    </section>
+
+    <!-- 忌口标签 -->
+    <section class="mb-8">
+      <h2 class="font-headline text-base font-bold mb-3">忌口设置</h2>
+      <div class="flex flex-wrap gap-2" id="tabooTags">
+        <p class="text-sm text-on-surface-variant">暂无设置，可到「我的 → 个性化偏好」中添加</p>
+      </div>
+    </section>
+
+    <!-- 开始抽取按钮 -->
+    <div class="fixed bottom-0 left-0 right-0 z-40 px-4 pb-8" style="padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));">
+      <div class="max-w-2xl mx-auto">
+        <button id="btnStart" class="btn-press cta-gradient w-full py-4 rounded-full font-headline text-lg font-bold text-white text-center shadow-ambient-lg block">
+          开始抽取
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  
+    <!-- ===== 抽奖过渡动画遮罩 ===== -->
+    <div id="lotteryOverlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center" style="background: rgba(0,0,0,0.85);">
+      <div class="text-center">
+        <!-- 旋转轮盘区域 -->
+        <div class="relative w-48 h-48 mx-auto mb-8">
+          <div id="lotteryRing" class="absolute inset-0 rounded-full border-4 border-dashed border-primary-container animate-spin" style="animation-duration: 0.8s;"></div>
+          <div class="absolute inset-4 rounded-full border-2 border-secondary-container/60 animate-spin" style="animation-duration: 1.3s; animation-direction: reverse;"></div>
+          <div class="absolute inset-8 rounded-full bg-white/5 backdrop-blur-sm flex items-center justify-center">
+            <span id="lotteryEmoji" class="text-5xl">🎯</span>
+          </div>
+        </div>
+        <!-- 文字提示 -->
+        <p id="lotteryText" class="font-headline text-xl font-bold text-white">正在为你挑选美食...</p>
+        <p class="text-white/50 text-sm mt-2">综合口味、预算与距离</p>
+        <!-- 跳动点 -->
+        <div class="flex justify-center gap-2 mt-4">
+          <span class="w-2 h-2 rounded-full bg-primary-container animate-bounce" style="animation-delay: 0s;"></span>
+          <span class="w-2 h-2 rounded-full bg-secondary-container animate-bounce" style="animation-delay: 0.15s;"></span>
+          <span class="w-2 h-2 rounded-full bg-primary-container animate-bounce" style="animation-delay: 0.3s;"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 结果弹窗 ===== -->
+    <div id="resultOverlay" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-6" style="background: rgba(0,0,0,0.5);" onclick="closeResultModal(event)">
+      <div id="resultModal" class="glass-strong w-full max-w-sm rounded-3xl p-6 shadow-ambient-lg animate-slideUp text-center" onclick="event.stopPropagation()">
+        <!-- 顶部装饰 -->
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full cta-gradient flex items-center justify-center shadow-ambient-lg">
+          <span id="modalEmoji" class="text-3xl">🍽️</span>
+        </div>
+        <!-- 店名 -->
+        <h2 id="modalName" class="font-headline text-xl font-bold text-on-surface mb-1"></h2>
+        <p id="modalCategory" class="text-sm text-on-surface-variant mb-4"></p>
+        <!-- 信息栏 -->
+        <div class="flex justify-center gap-6 mb-5">
+          <div class="text-center">
+            <p class="text-xs text-on-surface-variant mb-0.5">人均</p>
+            <p id="modalPrice" class="font-headline text-lg font-bold text-primary"></p>
+          </div>
+          <div class="text-center">
+            <p class="text-xs text-on-surface-variant mb-0.5">评分</p>
+            <p class="font-headline text-lg font-bold text-primary">⭐ <span id="modalRating"></span></p>
+          </div>
+          <div class="text-center">
+            <p class="text-xs text-on-surface-variant mb-0.5">距离</p>
+            <p id="modalDistance" class="font-headline text-lg font-bold text-primary"></p>
+          </div>
+        </div>
+        <!-- 标签 -->
+        <div class="flex flex-wrap justify-center gap-1.5 mb-4" id="modalTags"></div>
+        <!-- 提示 -->
+        <p class="text-xs text-on-surface-variant mb-5">点击「就选这个」将跳转美团外卖</p>
+        <!-- 按钮 -->
+        <div class="flex gap-3">
+          <button id="btnModalReroll" class="btn-press flex-1 py-3 rounded-full font-headline font-semibold text-on-surface bg-surface-container-low shadow-ambient">
+            🔄 换一个
+          </button>
+          <button id="btnModalConfirm" class="btn-press flex-[2] py-3 rounded-full font-headline font-semibold text-white cta-gradient shadow-ambient-lg">
+            🛒 就选这个
+          </button>
+        </div>
+      </div>
+    </div>
+
+<script src="js/app.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/algorithm.js"></script>
+  <script src="js/filter.js"></script>
+</body>
+</html>

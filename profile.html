@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>我的 - 替你选</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#8c4a00',
+            'primary-container': '#fd8b00',
+            'secondary-container': '#fecb00',
+            tertiary: '#006b1b',
+            surface: '#fbf5f0',
+            'surface-container': '#ede7e2',
+            'surface-container-low': '#f6f0ea',
+            'surface-container-lowest': '#ffffff',
+            'on-surface': '#302e2b',
+            'on-surface-variant': '#5e5b57',
+          },
+          borderRadius: {
+            DEFAULT: '1rem',
+            lg: '2rem',
+            xl: '3rem',
+            full: '9999px',
+          },
+          fontFamily: {
+            headline: ['Plus Jakarta Sans', 'sans-serif'],
+            body: ['Be Vietnam Pro', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-surface font-body text-on-surface">
+
+  <div id="toast-container"></div>
+
+  <div class="page-content max-w-2xl mx-auto px-4 pt-6 safe-bottom pb-32">
+
+    <!-- 顶部 -->
+    <h1 class="font-headline text-xl font-bold mb-6">个人中心</h1>
+
+    <!-- 用户信息卡片 -->
+    <div class="glass-strong rounded-2xl p-5 shadow-ambient mb-4">
+      <div class="flex items-center gap-4">
+        <img src="https://picsum.photos/seed/avatar/120/120" class="w-16 h-16 rounded-full" alt="头像">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <h2 class="font-headline text-lg font-bold">吃货小王</h2>
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-primary text-white">LV.5</span>
+          </div>
+          <p class="text-sm text-on-surface-variant">积分 <span class="text-primary font-bold">2,840</span></p>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+      </div>
+    </div>
+
+    <!-- 统计栏 -->
+    <div class="flex bg-surface-container-lowest rounded-2xl p-4 mb-6 shadow-ambient">
+      <div class="flex-1 text-center">
+        <p class="font-headline text-lg font-bold">128</p>
+        <p class="text-xs text-on-surface-variant">我的发布</p>
+      </div>
+      <div class="w-px bg-surface-container mx-2"></div>
+      <div class="flex-1 text-center">
+        <p class="font-headline text-lg font-bold">1.2k</p>
+        <p class="text-xs text-on-surface-variant">粉丝</p>
+      </div>
+      <div class="w-px bg-surface-container mx-2"></div>
+      <div class="flex-1 text-center">
+        <p class="font-headline text-lg font-bold">356</p>
+        <p class="text-xs text-on-surface-variant">关注</p>
+      </div>
+    </div>
+
+    <!-- 我的社区 Bento Grid -->
+    <h3 class="font-headline text-base font-bold mb-3">我的社区</h3>
+    <div class="grid grid-cols-2 gap-3 mb-6">
+      <!-- 我的发布 -->
+      <button class="btn-press col-span-2 bg-surface-container-lowest rounded-2xl p-5 text-left shadow-ambient" onclick="showToast('该功能正在开发中，敬请期待')">
+        <span class="material-symbols-outlined text-primary text-[28px] mb-2 block">edit_square</span>
+        <p class="font-headline font-bold text-sm">我的发布</p>
+        <p class="text-xs text-on-surface-variant mt-1">管理你的种草与踩雷</p>
+      </button>
+      <!-- 我的消息 -->
+      <button class="btn-press bg-surface-container-lowest rounded-2xl p-4 text-left shadow-ambient" onclick="showToast('该功能正在开发中，敬请期待')">
+        <span class="material-symbols-outlined text-primary text-[24px] mb-1 block">chat_bubble</span>
+        <p class="font-headline font-bold text-sm">我的消息</p>
+        <p class="text-xs text-on-surface-variant mt-0.5">3 条新消息</p>
+      </button>
+      <!-- 美食足迹 -->
+      <button class="btn-press bg-surface-container-lowest rounded-2xl p-4 text-left shadow-ambient" onclick="showToast('该功能正在开发中，敬请期待')">
+        <span class="material-symbols-outlined text-primary text-[24px] mb-1 block">footprint</span>
+        <p class="font-headline font-bold text-sm">美食足迹</p>
+        <p class="text-xs text-on-surface-variant mt-0.5">记录你的美食地图</p>
+      </button>
+      <!-- 个性化偏好 (可点击) -->
+      <a href="preferences.html" class="btn-press col-span-2 bg-primary-container/20 rounded-2xl p-5 text-left shadow-ambient block">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary text-[28px]">tune</span>
+          <div class="flex-1">
+            <p class="font-headline font-bold text-sm text-on-surface">个性化偏好</p>
+            <p class="text-xs text-on-surface-variant mt-1">设置口味、忌口和用餐偏好</p>
+          </div>
+          <span class="material-symbols-outlined text-primary">chevron_right</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- 常用服务 -->
+    <h3 class="font-headline text-base font-bold mb-3">常用服务</h3>
+    <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-ambient">
+      <button class="btn-press w-full flex items-center justify-between px-5 py-4" onclick="showToast('该功能正在开发中，敬请期待')">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+          <span class="text-sm">通知中心</span>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant text-[20px]">chevron_right</span>
+      </button>
+      <div class="h-px bg-surface-container mx-5"></div>
+      <button class="btn-press w-full flex items-center justify-between px-5 py-4" onclick="showToast('该功能正在开发中，敬请期待')">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-on-surface-variant">feedback</span>
+          <span class="text-sm">反馈建议</span>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant text-[20px]">chevron_right</span>
+      </button>
+      <div class="h-px bg-surface-container mx-5"></div>
+      <button class="btn-press w-full flex items-center justify-between px-5 py-4" onclick="showToast('该功能正在开发中，敬请期待')">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-on-surface-variant">settings</span>
+          <span class="text-sm">设置</span>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant text-[20px]">chevron_right</span>
+      </button>
+      <div class="h-px bg-surface-container mx-5"></div>
+      <button class="btn-press w-full flex items-center justify-between px-5 py-4" onclick="showToast('该功能正在开发中，敬请期待')">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-on-surface-variant">info</span>
+          <span class="text-sm">关于我们</span>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant text-[20px]">chevron_right</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- 底部 Tab 导航 -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40">
+    <div class="max-w-2xl mx-auto glass-strong px-6 py-3 flex items-center justify-around rounded-t-[2rem] shadow-ambient-lg" style="padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));">
+      <a href="index.html" class="flex flex-col items-center gap-1">
+        <span class="material-symbols-outlined text-on-surface-variant text-[28px]">home</span>
+        <span class="text-[11px] text-on-surface-variant">首页</span>
+      </a>
+      <a href="discover.html" class="flex flex-col items-center gap-1">
+        <span class="material-symbols-outlined text-on-surface-variant text-[28px]">explore</span>
+        <span class="text-[11px] text-on-surface-variant">发现</span>
+      </a>
+      <a href="profile.html" class="flex flex-col items-center gap-1 relative">
+        <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-12 h-1 bg-primary rounded-full"></div>
+        <span class="material-symbols-filled text-primary text-[28px]">person</span>
+        <span class="text-[11px] text-primary font-semibold">我的</span>
+      </a>
+    </div>
+  </nav>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

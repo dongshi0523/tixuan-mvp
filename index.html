@@ -1,10 +1,154 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-<meta http-equiv="refresh" content="0;url=tinxuan/stitch-bubble.html">
-<title>替你选</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>替你选 - 今天吃什么</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#8c4a00',
+            'primary-container': '#fd8b00',
+            'secondary-container': '#fecb00',
+            tertiary: '#006b1b',
+            surface: '#fbf5f0',
+            'surface-container': '#ede7e2',
+            'surface-container-low': '#f6f0ea',
+            'surface-container-lowest': '#ffffff',
+            'on-surface': '#302e2b',
+            'on-surface-variant': '#5e5b57',
+          },
+          borderRadius: {
+            DEFAULT: '1rem',
+            lg: '2rem',
+            xl: '3rem',
+            full: '9999px',
+          },
+          fontFamily: {
+            headline: ['Plus Jakarta Sans', 'sans-serif'],
+            body: ['Be Vietnam Pro', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-<p>跳转中... <a href="tinxuan/stitch-bubble.html">点击这里</a></p>
+<body class="bg-surface font-body text-on-surface">
+
+  <div id="toast-container"></div>
+
+  <!-- 页面内容 -->
+  <div class="page-content max-w-2xl mx-auto px-4 pt-6 safe-bottom">
+
+    <!-- 顶部导航 -->
+    <header class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-[32px]">restaurant_menu</span>
+        <h1 class="font-headline text-xl font-bold text-on-surface">替你选</h1>
+      </div>
+      <button class="btn-press w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-low shadow-ambient">
+        <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+      </button>
+    </header>
+
+    <!-- 泡泡池入口卡片 -->
+    <a href="bubble.html" class="block mb-4">
+      <div class="glass-strong rounded-xl p-8 shadow-ambient-lg text-center active:scale-[0.98] transition-transform">
+        <span class="material-symbols-outlined text-primary text-[64px] block mb-3">vibration</span>
+        <h2 class="font-headline text-2xl font-bold text-on-surface mb-1">随机选</h2>
+        <p class="text-on-surface-variant text-sm">让命运决定你的下一餐</p>
+      </div>
+    </a>
+
+    <!-- 精准筛选入口卡片 -->
+    <a href="filter.html" class="block mb-8">
+      <div class="bg-secondary-container rounded-xl p-5 flex items-center gap-4 shadow-ambient active:scale-[0.98] transition-transform">
+        <span class="material-symbols-outlined text-on-surface text-[40px]">filter_alt</span>
+        <div class="flex-1">
+          <h3 class="font-headline text-lg font-bold text-on-surface">精准筛选</h3>
+          <p class="text-on-surface-variant text-sm">按口味、预算、距离挑选</p>
+        </div>
+        <div class="flex items-center gap-1 bg-on-surface text-white px-4 py-2 rounded-full text-sm font-semibold btn-press">
+          开始抽取
+          <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- 美味情报站 -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-headline text-lg font-bold text-on-surface">美味情报站</h2>
+        <a href="discover.html" class="text-primary text-sm font-semibold flex items-center gap-1">
+          查看全部
+          <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+        </a>
+      </div>
+
+      <div class="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4">
+        <!-- 种草卡片 -->
+        <div class="flex-shrink-0 w-[200px] rounded-2xl overflow-hidden shadow-ambient bg-surface-container-lowest">
+          <div class="relative h-[120px] overflow-hidden">
+            <img src="https://picsum.photos/seed/hotpot/400/300" alt="" class="w-full h-full object-cover" loading="lazy">
+            <span class="absolute top-2 left-2 bg-primary text-white text-xs px-3 py-1 rounded-full font-semibold">优质发现</span>
+          </div>
+          <div class="p-3">
+            <p class="text-sm font-semibold line-clamp-2 mb-1">这家火锅店的毛肚绝了！七上八下刚刚好</p>
+            <div class="flex items-center gap-2">
+              <img src="https://picsum.photos/seed/user1/40/40" class="w-5 h-5 rounded-full" alt="">
+              <span class="text-xs text-on-surface-variant">火锅达人</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 踩雷卡片 -->
+        <div class="flex-shrink-0 w-[200px] rounded-2xl overflow-hidden shadow-ambient bg-surface-container-lowest">
+          <div class="relative h-[120px] overflow-hidden">
+            <img src="https://picsum.photos/seed/sushi2/400/300" alt="" class="w-full h-full object-cover" loading="lazy">
+            <span class="absolute top-2 left-2 bg-[#4a3728] text-white text-xs px-3 py-1 rounded-full font-semibold">避雷</span>
+          </div>
+          <div class="p-3">
+            <p class="text-sm font-semibold line-clamp-2 mb-1">人均80的日料店，三文鱼居然是冷冻的</p>
+            <div class="flex items-center gap-2">
+              <img src="https://picsum.photos/seed/user2/40/40" class="w-5 h-5 rounded-full" alt="">
+              <span class="text-xs text-on-surface-variant">美食侦探</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部 Tab 导航 -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40">
+    <div class="max-w-2xl mx-auto glass-strong px-6 py-3 flex items-center justify-around rounded-t-[2rem] shadow-ambient-lg" style="padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));">
+      <a href="index.html" class="flex flex-col items-center gap-1 relative">
+        <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-12 h-1 bg-primary rounded-full"></div>
+        <span class="material-symbols-filled text-primary text-[28px]">home</span>
+        <span class="text-[11px] text-primary font-semibold">首页</span>
+      </a>
+      <a href="discover.html" class="flex flex-col items-center gap-1">
+        <span class="material-symbols-outlined text-on-surface-variant text-[28px]">explore</span>
+        <span class="text-[11px] text-on-surface-variant">发现</span>
+      </a>
+      <a href="profile.html" class="flex flex-col items-center gap-1">
+        <span class="material-symbols-outlined text-on-surface-variant text-[28px]">person</span>
+        <span class="text-[11px] text-on-surface-variant">我的</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- 悬浮 FAB -->
+  <a href="bubble.html" class="fixed bottom-28 right-4 z-50 w-14 h-14 cta-gradient rounded-full flex items-center justify-center shadow-ambient-lg active:scale-95 transition-transform">
+    <span class="material-symbols-outlined text-white text-[28px]">casino</span>
+  </a>
+
+  <script src="js/app.js"></script>
 </body>
 </html>
